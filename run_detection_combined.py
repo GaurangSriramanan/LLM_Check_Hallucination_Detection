@@ -30,12 +30,11 @@ if __name__ == "__main__":
     # load dataset specific utils
     get_data, get_scores_dict = load_dataset_utils(args)
 
-    # test data can be left empty if test split isn't needed
-    train_data, test_data = get_data(n_samples=n_samples)
+    sample_data, _ = get_data(n_samples=n_samples)
 
-    # get scores for train data
-    scores, train_indiv_scores, train_labels = get_scores_dict(model_name_or_path, train_data, mt_list, args)
+    # get scores for sample data
+    scores, sample_indiv_scores, sample_labels = get_scores_dict(model_name_or_path, sample_data, mt_list, args)
 
     # save the scores to /data
     with open(f"data/scores_{args.dataset}_{args.model.lower()}_{n_samples}samp.pkl", "wb") as f:
-        pkl.dump([scores, train_indiv_scores, train_labels], f)
+        pkl.dump([scores, sample_indiv_scores, sample_labels], f)

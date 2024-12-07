@@ -16,12 +16,10 @@ def get_ragtruth_data(n_samples=200):
         for row in f:
             if row["model"] == "llama-2-7b-chat" and row["split"] == "train":
                 train_data.append(row)
-                # print(row)
             elif row["model"] == "llama-2-7b-chat" and row["split"] == "test":
                 test_data.append(row)
             if len(train_data) >= n_samples:
                 break
-    # print(train_data)
     return train_data, test_data
 
 
@@ -43,10 +41,6 @@ def get_scores_dict(model_name_or_path, data, mt_list, args):
         response = data[i]["response"]
         label = 1 if data[i]["halluc_count"] > 0 else 0
         labels.append(label)
-        # print("Prompt: ", prompt)
-        # print("-"*20)
-        # print("Response: ", response)
-        # print("-"*20)
 
         chat_template = get_conversation_template(model_name_or_path)
         chat_template.set_system_message(system_prompt.strip())
@@ -55,16 +49,13 @@ def get_scores_dict(model_name_or_path, data, mt_list, args):
 
         full_prompt = chat_template.get_prompt()
         user_prompt = full_prompt.split(response.strip())[0].strip()
-        # print("Full prompt: ", full_prompt)
-        # print("-"*20)
-        # print("User input: ", user_prompt)
-        # print("-"*20)
 
         tok_in_u = tokenizer(user_prompt, return_tensors="pt", add_special_tokens=True).input_ids
         tok_in = tokenizer(full_prompt, return_tensors="pt", add_special_tokens=True).input_ids
         tok_lens.append([tok_in_u.shape[1], tok_in.shape[1]])
 
         logit, hidden_act, attn = get_model_vals(model, tok_in.to(0))
+        # Unpacking the values into lists on CPU
         logit = logit[0].cpu()
         hidden_act = [x[0].to(torch.float32).detach().cpu() for x in hidden_act]
         attn = [x[0].to(torch.float32).detach().cpu() for x in attn]

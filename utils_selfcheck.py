@@ -68,6 +68,7 @@ def get_scores_dict(model_name_or_path, data, mt_list, args):
             tok_lens.append([tok_in_u.shape[1], tok_in.shape[1]])
 
             logit, hidden_act, attn = get_model_vals(model, tok_in.to(0))
+            # Unpacking the values into lists on CPU
             logit = logit[0].cpu()
             hidden_act = [x[0].to(torch.float32).detach().cpu() for x in hidden_act]
             attn = [x[0].to(torch.float32).detach().cpu() for x in attn]

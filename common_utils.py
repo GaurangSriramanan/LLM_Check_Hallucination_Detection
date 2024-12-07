@@ -4,10 +4,6 @@ from sklearn.metrics import auc, roc_curve
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-def def_dict_value():
-    return []
-
-
 def load_dataset_utils(args):
     """Util to lead different datasets"""
     if args.dataset == "selfcheck":
@@ -54,7 +50,7 @@ def get_roc_scores(scores: np.array, labels: np.array):
     return arc, acc, low
 
 
-def get_roc_auc_scores(scores, labels):
+def get_roc_auc_scores(scores: np.array, labels: np.array):
     """
     Util to get area under the curve, accuracy and tpr at 5% fpr
     Args:
@@ -75,12 +71,14 @@ def get_roc_auc_scores(scores, labels):
     return arc, acc, low, fpr, tpr
 
 
-def get_full_model_name(model_name):
+def get_full_model_name(model_name: str):
     """Map a short model name identifier to a fully qualified model name"""
     if "vicuna7b" in model_name:
         name = ["vicuna", "lmsys/vicuna-7b-v1.5"]
     elif "vicuna13b" in model_name:
         name = ["vicuna13b", "lmsys/vicuna-13b-v1.5"]
+    elif "llama-3" in model_name:
+        name = ["llama-3", "meta-llama/Meta-Llama-3-8B-Instruct"]
     elif "llama" in model_name:
         name = ["llama", "meta-llama/Llama-2-7b-chat-hf"]
     elif "pythia" in model_name:
@@ -94,7 +92,9 @@ def get_full_model_name(model_name):
     return name
 
 
-def load_model_and_tokenizer(model_name_or_path, tokenizer_name_or_path=None, dtype=torch.float16, **kwargs):
+def load_model_and_tokenizer(
+    model_name_or_path: str, tokenizer_name_or_path: str = None, dtype=torch.float16, **kwargs
+):
     """Util to load model and tokenizer"""
     model = AutoModelForCausalLM.from_pretrained(model_name_or_path, device_map="auto", torch_dtype=dtype, **kwargs)
     model.requires_grad_(False)
@@ -118,12 +118,15 @@ def compute_scores(logits, hidden_acts, attns, scores, indiv_scores, mt_list, to
     a list of metric scores defined by `mt_list`. The computed scores are appended
     to `scores` and `indiv_scores` dictionaries for tracking.
 
+    NOTE: The indiv_scores score dictionary will be saved to disk and then used for final metric computation in
+    check scores ipynb
+
     Args:
         logits: Model logits.
         hidden_acts: Hidden activations.
         attns: Attention matrices.
         scores (list): A list to store aggregated scores across samples.
-        indiv_scores (dict): A dictionary to store metric-specific scores for each sample.
+        indiv_scores (dict): A dictionary to store metric-specific scores for each sample
         mt_list (list): A list of metric types to compute.
         tok_ins: A list of tokenized inputs for each sample.
         tok_lens: A list of tuples indicating the start and end token indices for each sample.
@@ -146,12 +149,12 @@ def compute_scores(logits, hidden_acts, attns, scores, indiv_scores, mt_list, to
             indiv_scores[mt]["logit_entropy"].append(mt_score[-1])
 
         elif mt == "hidden":
-            for layer_num in range(len(hidden_acts[0])):
+            for layer_num in range(1, len(hidden_acts[0])):
                 mt_score.append(get_svd_eval(hidden_acts, layer_num, tok_lens, use_toklens)[0])
                 indiv_scores[mt]["Hly" + str(layer_num)].append(mt_score[-1])
 
         elif mt == "attns":
-            for layer_num in range(len(attns[0])):
+            for layer_num in range(1, len(attns[0])):
                 mt_score.append(get_attn_eig_prod(attns, layer_num, tok_lens, use_toklens)[0])
                 indiv_scores[mt]["Attn" + str(layer_num)].append(mt_score[-1])
 
@@ -444,3 +447,7 @@ def window_logit_entropy(logits, tok_lens, top_k=None, w=1):
         scores.append(windows.item())
 
     return np.stack(scores)
+
+
+def def_dict_value():
+    return []
