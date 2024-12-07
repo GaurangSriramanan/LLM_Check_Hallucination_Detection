@@ -1,6 +1,6 @@
 export KMP_DUPLICATE_LIB_OK=True
 
-export TRANSFORMERS_CACHE="path/to/transformers/cache"
+export HF_HOME="/path/to/hf_home"
 
 # - model can take a value in llama|llama-3|vicuna7b|vicuna13b|pythia|guanaco|mistral|falcon
 # - mt can take a values in logit|hidden|attns, where "logit" computes output token uncertainty metrics which are

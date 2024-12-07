@@ -1,0 +1,4 @@
+Model: llama, Method types: ['logit', 'attns'], Dataset: fava_annot, Use toklens: False
+Model: llama, Method types: ['logit', 'attns'], Dataset: fava_annot, Use toklens: False
+Model: llama, Method types: ['logit', 'attns'], Dataset: fava_annot, Use toklens: False
+Model: llama, Method types: ['logit', 'attns'], Dataset: fava_annot, Use toklens: False
